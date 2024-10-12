@@ -1,0 +1,43 @@
+/* styles/App.css */
+.container {
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(245, 245, 245, 0.9) 0%, rgba(200, 200, 200, 0.9) 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.1); /* Light overlay */
+    z-index: -1;
+  }
+  
+  .title-card {
+    background: linear-gradient(135deg, #1976d2 30%, #42a5f5 90%);
+    border-radius: 8px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 16px;
+    width: 100%;
+  }
+  
+  .title {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  }
+  
+  .subtitle {
+    color: white;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+ 
