@@ -10,12 +10,14 @@ import {
 } from '@mui/material';
 import MetricsSelection from './MetricsSelection';
 import MetricsModal from './MetricsModal'; // Import the modal component
-import { evaluateBot } from '../services/apiService';
+import { analyzeBot, evaluateBot } from '../services/apiService';
+import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist/webpack';
+
+
 
 const EvaluationForm = () => {
   const [conversationHistory, setConversationHistory] = useState('');
-  const [pdfFile, setPdfFile] = useState(null);
-  const [evaluationResult, setEvaluationResult] = useState(null);
   const [userQuestion, setUserQuestion] = useState('');
   const [botAnswer, setBotAnswer] = useState('');
   const [context, setContext] = useState('');
@@ -27,6 +29,7 @@ const EvaluationForm = () => {
     errorRate: false,
     coherence: false,
   });
+  const [evaluationResult, setEvaluationResult] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleSubmit = async (event) => {
@@ -37,24 +40,45 @@ const EvaluationForm = () => {
       botAnswer,
       context,
       metrics: JSON.stringify(metrics),
-      pdfFile,
     };
 
     try {
-      const result = await evaluateBot(formData);
+      const inputData = await evaluateBot(formData);
+      const result = await analyzeBot(inputData.data);
       setEvaluationResult(result);
-      setModalOpen(true); // Open the modal after evaluation
+      setModalOpen(true);
     } catch (error) {
       console.error('Failed to evaluate:', error);
     }
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setPdfFile(file);
-      // Optionally, you could read the file here and update conversation history
+      await extractTextFromPdf(file);
     }
+  };
+
+  const extractTextFromPdf = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    loadingTask.promise.then(async (pdfDoc) => {
+      let text = '';
+  
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const textContent = await page.getTextContent();
+        textContent.items.forEach(item => {
+          text += item.str + ' ';
+        });
+        text += '\n';
+      }
+  
+      setConversationHistory(text);
+    }).catch((error) => {
+      console.error('Error extracting PDF text:', error);
+    });
   };
 
   const handleCloseModal = () => {
@@ -76,30 +100,36 @@ const EvaluationForm = () => {
                   rows={4}
                   value={conversationHistory}
                   onChange={(e) => setConversationHistory(e.target.value)}
-                  placeholder="Paste conversation history here or upload a PDF..."
+                  placeholder="Paste the conversation history here or upload a PDF..."
                   sx={{ backgroundColor: '#f5f5f5' }}
                 />
-                <Button 
-                  variant="contained" 
-                  component="label"
-                  sx={{
-                    background: 'linear-gradient(135deg, #42a5f5, #1976d2)',
-                    color: 'white',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #1e88e5, #1565c0)',
-                    },
-                    marginTop: 2,
-                    width: '20%',
-                  }}
-                >
-                  Upload PDF
-                  <input 
-                    type="file" 
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    hidden
-                  />
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    component="label"
+                    sx={{
+                      background: 'linear-gradient(135deg, #42a5f5, #1976d2)',
+                      color: 'white',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #1e88e5, #1565c0)',
+                      },
+                      marginRight: 2,
+                    }}
+                  >
+                    Upload PDF
+                    <input 
+                      type="file" 
+                      accept="application/pdf"
+                      onChange={handleFileChange}
+                      hidden
+                    />
+                  </Button>
+                  {conversationHistory && (
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                      PDF content loaded successfully
+                    </Typography>
+                  )}
+                </Box>
               </CardContent>
             </Card>
           </Grid>
@@ -108,7 +138,7 @@ const EvaluationForm = () => {
               <CardContent>
                 <TextField
                   fullWidth
-                  label="Latest User Question (Optional)"
+                  label="User Question (Optional)"
                   variant="outlined"
                   value={userQuestion}
                   onChange={(e) => setUserQuestion(e.target.value)}
@@ -123,7 +153,7 @@ const EvaluationForm = () => {
               <CardContent>
                 <TextField
                   fullWidth
-                  label="Latest Bot Answer (Optional)"
+                  label="Bot Answer (Optional)"
                   variant="outlined"
                   value={botAnswer}
                   onChange={(e) => setBotAnswer(e.target.value)}
@@ -152,19 +182,18 @@ const EvaluationForm = () => {
             <MetricsSelection metrics={metrics} setMetrics={setMetrics} />
           </Grid>
           <Grid item xs={12}>
-            <Box display="flex" justifyContent="center" marginTop={2}>
-                <Button type="submit" variant="contained" color="primary" sx={{ boxShadow: 4, borderRadius: 1, width: '20%' }}>
-                    Evaluate
-                </Button>
-            </Box>
-        </Grid>
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ marginTop: 2 }}>
+              Evaluate
+            </Button>
+          </Grid>
         </Grid>
       </form>
-      {/* <MetricsModal 
-        open={modalOpen} 
-        handleClose={handleCloseModal} 
-        evaluationResult={evaluationResult} 
-      /> */}
+      {evaluationResult && (
+        <Box sx={{ marginTop: 3 }}>
+          <Typography variant="h6">Evaluation Results:</Typography>
+          <pre>{JSON.stringify(evaluationResult, null, 2)}</pre>
+        </Box>
+      )}
     </Box>
   );
 };

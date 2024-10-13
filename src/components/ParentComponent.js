@@ -14,7 +14,6 @@ const ParentComponent = () => {
   return (
     <div>
       <EvaluationForm metrics={metrics} setMetrics={setMetrics} />
-      {/* You can add other components or display metrics here */}
     </div>
   );
 };
