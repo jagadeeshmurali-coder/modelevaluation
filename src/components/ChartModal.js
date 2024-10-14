@@ -7,10 +7,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-// Register all necessary components
 Chart.register(...registerables);
 
-// Define a theme with custom typography
 const theme = createTheme({
     typography: {
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -32,7 +30,7 @@ const ChartModal = ({ open, onClose, evaluationResult }) => {
         },
         paper: {
             backgroundColor: 'white',
-            borderRadius: '16px', // Increased border radius for the modal
+            borderRadius: '16px',
             boxShadow: '24',
             padding: '16px',
             width: '80%',
@@ -43,7 +41,7 @@ const ChartModal = ({ open, onClose, evaluationResult }) => {
         recommendationsCard: {
             marginTop: 2,
             padding: 2,
-            backgroundColor: '#ffffff', // Changed to white
+            backgroundColor: '#ffffff',
             boxShadow: 2,
         },
         chartGrid: {
@@ -82,7 +80,6 @@ const ChartModal = ({ open, onClose, evaluationResult }) => {
 
     const labels = Object.keys(result);
 
-    // Prepare data for charts
     const confidenceScores = labels.map(label => parseFloat(result[label]['Overall confidence score']));
     const percentageRelations = labels.map(label => parseFloat(result[label]['Percentage relation']));
     const averageWordLengths = labels.map(label => parseFloat(result[label]['Average word length']));
@@ -134,40 +131,38 @@ const ChartModal = ({ open, onClose, evaluationResult }) => {
     const downloadAllCharts = async () => {
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageHeight = pdf.internal.pageSize.height;
-        let currentHeight = 10; // Starting height from the top of the page
+        let currentHeight = 10;
 
         const addChartToPdf = async (chartId) => {
             const chartCanvas = await html2canvas(document.getElementById(chartId));
             const imgData = chartCanvas.toDataURL('image/png');
-            const imgHeight = (chartCanvas.height * 180) / chartCanvas.width; // Adjust height based on width
+            const imgHeight = (chartCanvas.height * 180) / chartCanvas.width;
 
             if (currentHeight + imgHeight > pageHeight) {
-                pdf.addPage(); // Add a new page if the current height exceeds page height
-                currentHeight = 10; // Reset current height for new page
+                pdf.addPage(); 
+                currentHeight = 10; 
             }
 
             pdf.addImage(imgData, 'PNG', 10, currentHeight, 180, imgHeight);
-            currentHeight += imgHeight + 10; // Update current height for next chart
+            currentHeight += imgHeight + 10;
         };
 
-        // Add each chart to the PDF
         await addChartToPdf('confidenceChart');
         await addChartToPdf('percentageChart');
         await addChartToPdf('averageLengthChart');
         await addChartToPdf('responsePercentageChart');
 
-        // Add recommendations with pagination
         pdf.text('Recommendations', 10, currentHeight);
         currentHeight += 10;
 
         const recommendationLines = pdf.splitTextToSize(recommendations, 180);
         for (const line of recommendationLines) {
-            if (currentHeight > pageHeight - 10) { // Leave some margin at the bottom
-                pdf.addPage(); // Add a new page if we exceed the height
-                currentHeight = 10; // Reset current height for new page
+            if (currentHeight > pageHeight - 10) { 
+                pdf.addPage(); 
+                currentHeight = 10; 
             }
             pdf.text(line, 10, currentHeight);
-            currentHeight += 10; // Move down for the next line
+            currentHeight += 10; 
         }
 
         pdf.save('charts.pdf');
