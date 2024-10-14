@@ -12,10 +12,10 @@ const App = () => {
         <Box className="overlay" />
         <Box className="title-card">
           <Typography variant="h4" className="title">
-            AI Conversational Bot Performance Evaluation Tool
+            AI Conversational Bot Performance Evaluator
           </Typography>
           <Typography variant="h8" className="subtitle">
-           Asses your Conversational Model Performance with dynamic metric sets
+           Asses your Conversational Model's Performance with dynamic metric sets
           </Typography>
         </Box>
         <EvaluationForm />

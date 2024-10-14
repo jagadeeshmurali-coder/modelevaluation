@@ -35,7 +35,7 @@ const MetricsSelection = ({ metrics, setMetrics }) => {
                   background: metrics[id] ? 'linear-gradient(135deg, #1e88e5, #1565c0)' : '#e0e0e0',
                 },
               }}
-              onClick={() => handleToggle(id)} // Click event to toggle
+              onClick={() => handleToggle(id)} 
             >
               <CardContent sx={{ padding: 2 }}>
                 <Typography variant="body1" sx={{ color: metrics[id] ? 'white' : 'black' }}>
