@@ -3,7 +3,7 @@ import { Container, Typography, Box } from '@mui/material';
 import EvaluationForm from './components/EvaluationForm';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './styles/theme';
-import './styles/App.css'; // Import the CSS file
+import './styles/App.css'; 
 
 const App = () => {
   return (
