@@ -7,7 +7,7 @@ import {
   CardContent,
   Grid,
   Typography,
-  Skeleton,
+  CircularProgress,
 } from '@mui/material';
 import MetricsSelection from './MetricsSelection';
 import ChartModal from './ChartModal';
@@ -184,7 +184,7 @@ const EvaluationForm = () => {
           </Grid>
           <Grid item xs={12}>
             <Button type="submit" variant="contained" color="primary" fullWidth sx={{ marginTop: 2 }}>
-              Evaluate
+              {loading ? <CircularProgress size={24} sx={{ color: 'white', marginRight: 1 }} /> : 'Evaluate'}
             </Button>
           </Grid>
         </Grid>
