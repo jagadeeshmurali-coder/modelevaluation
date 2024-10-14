@@ -7,14 +7,12 @@ import {
   CardContent,
   Grid,
   Typography,
+  Skeleton,
 } from '@mui/material';
 import MetricsSelection from './MetricsSelection';
-import MetricsModal from './MetricsModal'; // Import the modal component
+import ChartModal from './ChartModal';
 import { analyzeBot, evaluateBot } from '../services/apiService';
-import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
-
-
 
 const EvaluationForm = () => {
   const [conversationHistory, setConversationHistory] = useState('');
@@ -31,6 +29,7 @@ const EvaluationForm = () => {
   });
   const [evaluationResult, setEvaluationResult] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,13 +41,18 @@ const EvaluationForm = () => {
       metrics: JSON.stringify(metrics),
     };
 
+    setLoading(true);
+
     try {
       const inputData = await evaluateBot(formData);
-      const result = await analyzeBot(inputData.data);
-      setEvaluationResult(result);
+      const scores = await analyzeBot(inputData.data);
+      
+      setEvaluationResult(scores);
       setModalOpen(true);
     } catch (error) {
       console.error('Failed to evaluate:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,11 +65,9 @@ const EvaluationForm = () => {
 
   const extractTextFromPdf = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
-    
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     loadingTask.promise.then(async (pdfDoc) => {
       let text = '';
-  
       for (let i = 1; i <= pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i);
         const textContent = await page.getTextContent();
@@ -74,7 +76,6 @@ const EvaluationForm = () => {
         });
         text += '\n';
       }
-  
       setConversationHistory(text);
     }).catch((error) => {
       console.error('Error extracting PDF text:', error);
@@ -188,12 +189,8 @@ const EvaluationForm = () => {
           </Grid>
         </Grid>
       </form>
-      {evaluationResult && (
-        <Box sx={{ marginTop: 3 }}>
-          <Typography variant="h6">Evaluation Results:</Typography>
-          <pre>{JSON.stringify(evaluationResult, null, 2)}</pre>
-        </Box>
-      )}
+
+      <ChartModal open={modalOpen} onClose={handleCloseModal} evaluationResult={evaluationResult} loading={loading} />
     </Box>
   );
 };
