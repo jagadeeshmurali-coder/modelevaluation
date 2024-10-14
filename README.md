@@ -47,3 +47,13 @@ The Chatbot Evaluation Frontend is a React-based application that allows users t
      node server.js     
 
     The server will run on http://localhost:3000.   
+
+## Usage
+
+1. **Enter Conversation History**: Paste or upload a PDF containing the conversation history.
+2. **Fill in Optional Fields**: Optionally input the user question and bot answer.
+3. **Select Metrics**: Choose which metrics to evaluate.
+4. **Click Evaluate**: Submit the form to analyze the chatbot interaction.
+5. **View Results**: The results will be displayed in charts and include recommendations.
+6. **Download PDF**: Click the button to download the evaluation report as a PDF.
+
